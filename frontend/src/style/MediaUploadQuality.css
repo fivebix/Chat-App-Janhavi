@@ -1,0 +1,138 @@
+.media-quality-settings {
+	width: 100%;
+	min-height: 100%;
+	background: #17110e;
+	color: #f4e9dc;
+}
+
+.media-quality-header {
+	height: 68px;
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	padding: 0 22px;
+	border-bottom: 1px solid #2d211b;
+}
+
+.media-quality-header h2 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 600;
+}
+
+.media-quality-back {
+	width: 34px;
+	height: 34px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: #d8c7b8;
+	cursor: pointer;
+	font-size: 20px;
+}
+
+.media-quality-back:hover {
+	background: #2a1e18;
+	color: #f4e9dc;
+}
+
+.media-quality-content {
+	padding: 30px 22px;
+}
+
+.media-quality-description {
+	margin: 0 0 24px;
+	color: #a18e7e;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.media-quality-options {
+	display: flex;
+	flex-direction: column;
+}
+
+.media-quality-option {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 18px 4px;
+	border: none;
+	border-bottom: 1px solid #2d211b;
+	background: transparent;
+	color: #f4e9dc;
+	text-align: left;
+	cursor: pointer;
+}
+
+.media-quality-option:first-child {
+	border-top: 1px solid #2d211b;
+}
+
+.media-quality-option:hover {
+	background: rgba(112, 75, 53, 0.08);
+}
+
+.media-quality-option-text {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.media-quality-title {
+	font-size: 15px;
+	font-weight: 500;
+}
+
+.media-quality-option-description {
+	color: #806e61;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.media-quality-radio {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #806e61;
+	border-radius: 50%;
+	color: #f4e9dc;
+}
+
+.media-quality-option.selected .media-quality-radio {
+	background: #704b35;
+	border-color: #a07850;
+}
+
+.media-quality-radio svg {
+	width: 13px;
+	height: 13px;
+}
+
+@media (max-width: 600px) {
+	.media-quality-header {
+		height: 68px;
+		padding: 0 18px;
+		gap: 14px;
+	}
+
+	.media-quality-header h2 {
+		font-size: 20px;
+	}
+
+	.media-quality-content {
+		padding: 26px 18px;
+	}
+
+	.media-quality-option {
+		padding: 17px 4px;
+	}
+}

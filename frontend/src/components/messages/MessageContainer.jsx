@@ -71,18 +71,35 @@ selectedConversation._id
 )
 : false;
 
-const lastSeen =
-selectedConversation &&
+const lastSeenPrivacy =
+selectedConversation?.lastSeenPrivacy ||
+"everyone";
+
+const canShowLastSeen =
+lastSeenPrivacy === "everyone" ||
 (
-lastSeenUsers[
-selectedConversation._id
-] ||
-selectedConversation.lastSeen
+lastSeenPrivacy === "contacts" &&
+Boolean(
+selectedConversation?.conversationId
+)
 );
+
+const hasVisibleLastSeen =
+selectedConversation &&
+Object.prototype.hasOwnProperty.call(
+lastSeenUsers,
+selectedConversation._id
+);
+
+const lastSeen = selectedConversation && canShowLastSeen
+? hasVisibleLastSeen
+? lastSeenUsers[selectedConversation._id]
+: selectedConversation.lastSeen
+: null;
 
 const formatLastSeen = (lastSeen) => {
 if (!lastSeen) {
-return "Never seen";
+return null;
 }
 
 const date = new Date(lastSeen);
@@ -130,6 +147,9 @@ return `Last seen yesterday at ${time}`;
 return `Last seen on ${date.toLocaleDateString()} at ${time}`;
 };
 
+const lastSeenText =
+formatLastSeen(lastSeen);
+
 const handleSearchToggle = () => {
 setSearchOpen((prev) => !prev);
 setSearchQuery("");
@@ -169,134 +189,145 @@ showContactInfo
 {searchOpen ? (
 <div className="chat-search">
 <button
-  type="button"
-  className="chat-search-close"
-  onClick={
-    handleSearchToggle
-  }
-  title="Close search"
+type="button"
+className="chat-search-close"
+onClick={
+handleSearchToggle
+}
+title="Close search"
 >
-  <FiX />
+<FiX />
 </button>
 
 <div className="chat-search-input-wrapper">
-  <FiSearch />
+<FiSearch />
 
-  <input
-    type="text"
-    placeholder="Search messages..."
-    value={
-      searchQuery
-    }
-    onChange={(e) =>
-      setSearchQuery(
-        e.target.value
-      )
-    }
-    autoFocus
-  />
+<input
+type="text"
+placeholder="Search messages..."
+value={
+searchQuery
+}
+onChange={(e) =>
+setSearchQuery(
+e.target.value
+)
+}
+autoFocus
+/>
 </div>
 </div>
 ) : (
 <>
 <button
-  type="button"
-  className="mobile-back-btn"
-  onClick={handleBack}
-  title="Back to conversations"
+type="button"
+className="mobile-back-btn"
+onClick={
+handleBack
+}
+title="Back to conversations"
 >
-  <FiArrowLeft />
+<FiArrowLeft />
 </button>
 
 <button
-  type="button"
-  className="chat-user"
-  onClick={
-    handleContactInfoToggle
-  }
-  title="Contact info"
+type="button"
+className="chat-user"
+onClick={
+handleContactInfoToggle
+}
+title="Contact info"
 >
-  <div className="chat-avatar">
-    <img
-      src={
-        selectedConversation.profilePic
-      }
-      alt={
-        selectedConversation.fullName
-      }
-    />
+<div className="chat-avatar">
+{selectedConversation.profilePic ? (
+<img
+src={
+selectedConversation.profilePic
+}
+alt={
+selectedConversation.fullName
+}
+/>
+) : (
+<div className="chat-avatar-fallback">
+{selectedConversation.fullName
+?.charAt(0)
+?.toUpperCase() || "?"}
+</div>
+)}
 
-    {isOnline && (
-      <span className="online-dot"></span>
-    )}
-  </div>
+{isOnline && (
+<span className="online-dot"></span>
+)}
+</div>
 
-  <div className="chat-user-info">
-    <div className="chat-user-name-row">
-      <h3>
-        {
-          selectedConversation.fullName
-        }
-      </h3>
-    </div>
+<div className="chat-user-info">
+<div className="chat-user-name-row">
+<h3>
+{
+selectedConversation.fullName
+}
+</h3>
+</div>
 
-    <p
-      className={
-        isTyping
-          ? "typing"
-          : isOnline
-          ? "online"
-          : "offline"
-      }
-    >
-      {isTyping
-        ? "Typing..."
-        : isOnline
-        ? "Online"
-        : formatLastSeen(
-            lastSeen
-          )}
-    </p>
-  </div>
+<p
+className={
+isTyping
+? "typing"
+: isOnline
+? "online"
+: lastSeenText
+? "offline"
+: "offline"
+}
+>
+{isTyping
+? "Typing..."
+: isOnline
+? "Online"
+: lastSeenText ||
+""}
+</p>
+</div>
 </button>
 
 <div className="chat-actions">
-  <button
-    type="button"
-    onClick={
-      handleSearchToggle
-    }
-    title="Search messages"
-  >
-    <FiSearch />
-  </button>
+<button
+type="button"
+onClick={
+handleSearchToggle
+}
+title="Search messages"
+>
+<FiSearch />
+</button>
 
-  <button
-    type="button"
-    title="Voice call"
-    className="header-action-desktop"
-  >
-    <FiPhone />
-  </button>
+<button
+type="button"
+title="Voice call"
+className="header-action-desktop"
+>
+<FiPhone />
+</button>
 
-  <button
-    type="button"
-    title="Video call"
-    className="header-action-desktop"
-  >
-    <FiVideo />
-  </button>
+<button
+type="button"
+title="Video call"
+className="header-action-desktop"
+>
+<FiVideo />
+</button>
 
-  <button
-    type="button"
-    title="Contact info"
-    className="header-more-btn"
-    onClick={
-      handleContactInfoToggle
-    }
-  >
-    <FiMoreVertical />
-  </button>
+<button
+type="button"
+title="Contact info"
+className="header-more-btn"
+onClick={
+handleContactInfoToggle
+}
+>
+<FiMoreVertical />
+</button>
 </div>
 </>
 )}
@@ -329,7 +360,11 @@ setSelectedSearchMessage
 }
 />
 
-<MessageInput />
+<MessageInput 
+	isBlocked={selectedConversation.isBlocked||
+   selectedConversation.isBlockedByOtherUser 
+  }
+/>
 </div>
 
 {showContactInfo && (

@@ -30,6 +30,8 @@ headers: {
 const data =
 await res.json();
 
+console.log("Conversations API response:", data);
+
 if (data.error) {
 throw new Error(
 data.error

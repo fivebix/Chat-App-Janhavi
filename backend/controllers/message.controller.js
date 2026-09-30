@@ -40,17 +40,15 @@ uploadStream
 );
 });
 
-export const sendMessage = async (
-req,
-res
-) => {
+
+export const sendMessage = async (req, res) => {
 try {
 console.log(
 "SEND MESSAGE CONTROLLER HIT"
 );
 
 const {
-message="",
+message = "",
 replyTo,
 gifUrl,
 messageType: requestedMessageType,
@@ -61,6 +59,55 @@ id: receiverId,
 } = req.params;
 
 const senderId = req.user._id;
+
+const sender = await User.findById(
+senderId
+).select("blockedUsers");
+
+if (!sender) {
+return res.status(404).json({
+error: "Sender not found",
+});
+}
+
+const isBlocked =
+sender.blockedUsers?.some(
+(userId) =>
+String(userId) ===
+String(receiverId)
+);
+
+if (isBlocked) {
+return res.status(403).json({
+error:
+"You have blocked this user",
+});
+}
+
+const receiver =
+await User.findById(
+receiverId
+).select("blockedUsers");
+
+if (!receiver) {
+return res.status(404).json({
+error: "Receiver not found",
+});
+}
+
+const receiverHasBlockedSender =
+receiver.blockedUsers?.some(
+(userId) =>
+String(userId) ===
+String(senderId)
+);
+
+if (receiverHasBlockedSender) {
+	return res.status(403).json({
+		error:
+			"You cannot send messages to this user because they have blocked you",
+	});
+}
 
 console.log("BODY:", {
 message,
@@ -89,12 +136,12 @@ gifUrl.trim()
 ) {
 const isValidGifUrl =
 /^https:\/\/([a-z0-9-]+\.)?giphy\.com\//i.test(
-	gifUrl.trim()
+gifUrl.trim()
 );
 
 if (!isValidGifUrl) {
 return res.status(400).json({
-	error: "Invalid GIF URL",
+error: "Invalid GIF URL",
 });
 }
 
@@ -158,7 +205,8 @@ if (
 messageType !== "gif"
 ) {
 return res.status(400).json({
-error: "Message cannot be empty",
+error:
+"Message cannot be empty",
 });
 }
 
@@ -167,7 +215,8 @@ messageType !== "text" &&
 !fileUrl
 ) {
 return res.status(400).json({
-error: "Attachment is required",
+error:
+"Attachment is required",
 });
 }
 
@@ -203,21 +252,16 @@ const newMessage =
 new Message({
 senderId,
 receiverId,
-
 message:
 messageType === "text"
 ? message.trim()
 : "",
-
 messageType,
-
 fileUrl,
 fileName,
 fileType,
-
 replyTo:
 replyTo || null,
-
 status: "sent",
 });
 
@@ -308,6 +352,7 @@ error: "Internal server error",
 });
 }
 };
+
 
 export const getMessages = async (
 req,

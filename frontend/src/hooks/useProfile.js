@@ -4,156 +4,229 @@ import toast from "react-hot-toast";
 import { useAuthContext } from "../context/AuthContext";
 
 const useProfile = () => {
-	const { authUser, setAuthUser } =
-		useAuthContext();
+const { authUser, setAuthUser } =
+useAuthContext();
 
-	const [loading, setLoading] =
-		useState(false);
+const [loading, setLoading] =
+useState(false);
 
-	const updateProfilePicture = async (
-		file
-	) => {
-		if (!file) return false;
+const updateProfile = async ({
+fullName,
+username,
+}) => {
+setLoading(true);
 
-		setLoading(true);
+try {
+const token =
+localStorage.getItem(
+"chat-token"
+);
 
-		try {
-			const token =
-				localStorage.getItem(
-					"chat-token"
-				);
+const res = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/profile`,
+{
+method: "PUT",
+headers: {
+"Content-Type":
+"application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+fullName,
+username,
+}),
+}
+);
 
-			const formData =
-				new FormData();
+const data =
+await res.json();
 
-			formData.append(
-				"profilePic",
-				file
-			);
+if (!res.ok || data.error) {
+throw new Error(
+data.error ||
+"Failed to update profile"
+);
+}
 
-			const res = await fetch(
-				`${import.meta.env.VITE_API_URL}/api/users/profile-picture`,
-				{
-					method: "PUT",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-					body: formData,
-				}
-			);
+const updatedUser = {
+...authUser,
+...data.user,
+};
 
-			const data =
-				await res.json();
+setAuthUser(updatedUser);
 
-			if (!res.ok || data.error) {
-				throw new Error(
-					data.error ||
-						"Failed to update profile picture"
-				);
-			}
+localStorage.setItem(
+"chat-user",
+JSON.stringify(updatedUser)
+);
 
-			const updatedUser = {
-				...authUser,
-				...data.user,
-			};
+toast.success(
+"Profile updated successfully"
+);
 
-			setAuthUser(updatedUser);
+return true;
+} catch (error) {
+console.error(
+"Error updating profile:",
+error.message
+);
 
-			localStorage.setItem(
-				"chat-user",
-				JSON.stringify(updatedUser)
-			);
+toast.error(
+error.message ||
+"Failed to update profile"
+);
 
-			toast.success(
-				"Profile picture updated"
-			);
+return false;
+} finally {
+setLoading(false);
+}
+};
 
-			return true;
-		} catch (error) {
-			console.error(
-				"Error updating profile picture:",
-				error.message
-			);
+const updateProfilePicture = async (
+file
+) => {
+if (!file) return false;
 
-			toast.error(
-				error.message ||
-					"Failed to update profile picture"
-			);
+setLoading(true);
 
-			return false;
-		} finally {
-			setLoading(false);
-		}
-	};
+try {
+const token =
+localStorage.getItem(
+"chat-token"
+);
 
-	const changePassword = async ({
-		currentPassword,
-		newPassword,
-		confirmPassword,
-	}) => {
-		setLoading(true);
+const formData =
+new FormData();
 
-		try {
-			const token =
-				localStorage.getItem(
-					"chat-token"
-				);
+formData.append(
+"profilePic",
+file
+);
 
-			const res = await fetch(
-				`${import.meta.env.VITE_API_URL}/api/users/change-password`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type":
-							"application/json",
+const res = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/profile-picture`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+body: formData,
+}
+);
 
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						currentPassword,
-						newPassword,
-						confirmPassword,
-					}),
-				}
-			);
+const data =
+await res.json();
 
-			const data =
-				await res.json();
+if (!res.ok || data.error) {
+throw new Error(
+data.error ||
+"Failed to update profile picture"
+);
+}
 
-			if (!res.ok || data.error) {
-				throw new Error(
-					data.error ||
-						"Failed to change password"
-				);
-			}
+const updatedUser = {
+...authUser,
+...data.user,
+};
 
-			toast.success(
-				"Password changed successfully"
-			);
+setAuthUser(updatedUser);
 
-			return true;
-		} catch (error) {
-			console.error(
-				"Error changing password:",
-				error.message
-			);
+localStorage.setItem(
+"chat-user",
+JSON.stringify(updatedUser)
+);
 
-			toast.error(
-				error.message ||
-					"Failed to change password"
-			);
+toast.success(
+"Profile picture updated"
+);
 
-			return false;
-		} finally {
-			setLoading(false);
-		}
-	};
+return true;
+} catch (error) {
+console.error(
+"Error updating profile picture:",
+error.message
+);
 
-	return {
-		updateProfilePicture,
-		changePassword,
-		loading,
-	};
+toast.error(
+error.message ||
+"Failed to update profile picture"
+);
+
+return false;
+} finally {
+setLoading(false);
+}
+};
+
+const changePassword = async ({
+currentPassword,
+newPassword,
+confirmPassword,
+}) => {
+setLoading(true);
+
+try {
+const token =
+localStorage.getItem(
+"chat-token"
+);
+
+const res = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/change-password`,
+{
+method: "PUT",
+headers: {
+"Content-Type":
+"application/json",
+
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+currentPassword,
+newPassword,
+confirmPassword,
+}),
+}
+);
+
+const data =
+await res.json();
+
+if (!res.ok || data.error) {
+throw new Error(
+data.error ||
+"Failed to change password"
+);
+}
+
+toast.success(
+"Password changed successfully"
+);
+
+return true;
+} catch (error) {
+console.error(
+"Error changing password:",
+error.message
+);
+
+toast.error(
+error.message ||
+"Failed to change password"
+);
+
+return false;
+} finally {
+setLoading(false);
+}
+};
+
+return {
+updateProfile,
+updateProfilePicture,
+changePassword,
+loading,
+};
 };
 
 export default useProfile;

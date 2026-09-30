@@ -1,0 +1,131 @@
+.contact-support {
+	width: 100%;
+	min-height: 100%;
+	background: #17110e;
+	color: #f4e9dc;
+}
+
+.contact-support-header {
+	height: 68px;
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	padding: 0 22px;
+	border-bottom: 1px solid #2d211b;
+}
+
+.contact-support-header h2 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 600;
+}
+
+.contact-support-back {
+	width: 34px;
+	height: 34px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: #d8c7b8;
+	cursor: pointer;
+	font-size: 20px;
+}
+
+.contact-support-back:hover {
+	background: #2a1e18;
+	color: #f4e9dc;
+}
+
+.contact-support-content {
+	max-width: 520px;
+	padding: 48px 22px;
+}
+
+.contact-support-icon {
+	width: 64px;
+	height: 64px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 22px;
+	border-radius: 16px;
+	background: #241a15;
+	border: 1px solid #3d2b22;
+	color: #c49368;
+	font-size: 28px;
+}
+
+.contact-support-content h3 {
+	margin: 0 0 10px;
+	font-size: 21px;
+	font-weight: 600;
+}
+
+.contact-support-content > p {
+	margin: 0 0 26px;
+	color: #a18e7e;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.contact-support-card {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	padding: 16px;
+	margin-bottom: 18px;
+	border: 1px solid #3d2b22;
+	border-radius: 10px;
+	background: #211813;
+}
+
+.contact-support-label {
+	color: #806e61;
+	font-size: 12px;
+}
+
+.contact-support-email {
+	color: #e9dbce;
+	font-size: 14px;
+}
+
+.contact-support-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	padding: 10px 16px;
+	border: none;
+	border-radius: 8px;
+	background: #704b35;
+	color: #f4e9dc;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.contact-support-button:hover {
+	background: #80583d;
+}
+
+.contact-support-button svg {
+	font-size: 16px;
+}
+
+@media (max-width: 600px) {
+	.contact-support-header {
+		height: 68px;
+		padding: 0 18px;
+		gap: 14px;
+	}
+
+	.contact-support-header h2 {
+		font-size: 20px;
+	}
+
+	.contact-support-content {
+		padding: 34px 18px;
+	}
+}

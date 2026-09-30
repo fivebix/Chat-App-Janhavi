@@ -304,3 +304,32 @@ font-size: 14px;
 font-size: 12px;
 }
 }
+
+.privacy-loading {
+padding: 24px 0;
+color: #a18e7e;
+font-size: 14px;
+text-align: center;
+}
+
+.privacy-radio {
+width: 22px;
+height: 22px;
+display: flex;
+align-items: center;
+justify-content: center;
+border: 1px solid #493329;
+border-radius: 50%;
+color: #fff1dc;
+font-size: 13px;
+flex-shrink: 0;
+}
+
+.privacy-option:has(.privacy-radio) .privacy-radio {
+background: #241a15;
+}
+
+.privacy-option:has(.privacy-radio) .privacy-radio:not(:empty) {
+background: #8a6845;
+border-color: #a07850;
+}

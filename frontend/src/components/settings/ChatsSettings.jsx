@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "../../style/ChatsSettings.css";
 
 import {
@@ -7,8 +8,14 @@ FiImage,
 FiCheck,
 } from "react-icons/fi";
 
+import MediaUploadQuality from "./MediaUploadQuality";
+import WallpaperSettings from "./WallpaperSettings";
 
 const ChatsSettings = ({ onBack }) => {
+const [activeSetting, setActiveSetting] = useState(null);
+const [mediaQuality, setMediaQuality] = useState("Standard");
+const [selectedWallpaper, setSelectedWallpaper] = useState("default");
+
 const chatOptions = [
 {
 id: "theme",
@@ -18,12 +25,19 @@ value: "Dark",
 {
 id: "wallpaper",
 title: "Wallpaper",
-value: "Default",
+value:
+selectedWallpaper === "default"
+? "Default"
+: selectedWallpaper === "brown"
+? "Warm Brown"
+: selectedWallpaper === "dark"
+? "Deep Dark"
+: "Soft Cream",
 },
 {
 id: "media-quality",
 title: "Media upload quality",
-value: "Standard",
+value: mediaQuality,
 },
 {
 id: "auto-download",
@@ -31,6 +45,26 @@ title: "Media auto-download",
 value: "Photos and videos",
 },
 ];
+
+if (activeSetting === "media-quality") {
+return (
+<MediaUploadQuality
+onBack={() => setActiveSetting(null)}
+selectedQuality={mediaQuality}
+onQualityChange={setMediaQuality}
+/>
+);
+}
+
+if (activeSetting === "wallpaper") {
+return (
+<WallpaperSettings
+onBack={() => setActiveSetting(null)}
+selectedWallpaper={selectedWallpaper}
+onWallpaperChange={setSelectedWallpaper}
+/>
+);
+}
 
 return (
 <div className="chats-settings">
@@ -54,6 +88,15 @@ aria-label="Back"
 key={option.id}
 type="button"
 className="chat-setting-item"
+onClick={() => {
+if (option.id === "media-quality") {
+setActiveSetting("media-quality");
+}
+
+if (option.id === "wallpaper") {
+setActiveSetting("wallpaper");
+}
+}}
 >
 <div className="chat-setting-content">
 <span className="chat-setting-title">

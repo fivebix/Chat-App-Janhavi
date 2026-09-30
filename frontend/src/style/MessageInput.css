@@ -579,3 +579,23 @@ max-height: 150px;
 max-width: 200px;
 }
 }
+
+.blocked-message-container {
+min-height: 64px;
+padding: 12px 18px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-top: 1px solid #3d2b22;
+background: #1e1511;
+color: #a18e7e;
+font-size: 14px;
+text-align: center;
+}
+
+.blocked-message-container span {
+padding: 9px 16px;
+border-radius: 10px;
+background: #241a15;
+border: 1px solid #3d2b22;
+}

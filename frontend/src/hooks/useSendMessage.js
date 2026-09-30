@@ -27,94 +27,91 @@ setLoading(true);
 try {
 const formData = new FormData();
 
-// Add text message if available
 if (message.trim()) {
 formData.append(
-  "message",
-  message.trim()
+"message",
+message.trim()
 );
 }
 
-// Add file/image if available
 if (file) {
 formData.append(
-  "file",
-  file
+"file",
+file
 );
 }
 
-// Add GIF information
-if (gifUrl && messageType === "gif") {
+if (
+gifUrl &&
+messageType === "gif"
+) {
 formData.append(
-  "gifUrl",
-  gifUrl
+"gifUrl",
+gifUrl
 );
 
 formData.append(
-  "messageType",
-  "gif"
+"messageType",
+"gif"
 );
 }
 
-// Add reply information
 if (replyingTo?._id) {
 formData.append(
-  "replyTo",
-  replyingTo._id
+"replyTo",
+replyingTo._id
 );
 }
 
 const token =
 localStorage.getItem(
-  "chat-token"
+"chat-token"
 );
 
 const res = await fetch(
 `${import.meta.env.VITE_API_URL}/api/messages/send/${selectedConversation._id}`,
 {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-  body: formData,
+method: "POST",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+body: formData,
 }
 );
 
-const data =
-await res.json();
+const data = await res.json();
+
+if (!res.ok) {
+throw new Error(
+data.error ||
+"Failed to send message"
+);
+}
 
 if (data.error) {
-throw new Error(
-  data.error
-);
+throw new Error(data.error);
 }
 
-// Add new message to current chat
-setMessages(
-(currentMessages) => [
-  ...currentMessages,
-  data,
-]
-);
+setMessages((currentMessages) => [
+...currentMessages,
+data,
+]);
 
 window.dispatchEvent(
 new CustomEvent(
-  "conversationActivity",
-  {
-    detail: {
-      userId:
-        selectedConversation._id,
-    },
-  }
+"conversationActivity",
+{
+detail: {
+userId:
+selectedConversation._id,
+},
+}
 )
 );
 
 return data;
 } catch (error) {
-toast.error(
-error.message
-);
-
+toast.error(error.message);
 throw error;
 } finally {
 setLoading(false);

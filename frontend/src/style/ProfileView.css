@@ -219,6 +219,151 @@ overflow: hidden;
 text-overflow: ellipsis;
 }
 
+/* Edit profile */
+
+.edit-profile-form {
+display: flex;
+flex-direction: column;
+gap: 12px;
+padding: 14px;
+}
+
+.edit-profile-input-group {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.edit-profile-input-group label {
+color: #806e61;
+font-size: 9px;
+}
+
+.edit-profile-input-group input {
+width: 100%;
+height: 40px;
+box-sizing: border-box;
+padding: 0 11px;
+border: 1px solid #463127;
+border-radius: 9px;
+outline: none;
+background: #241a15;
+color: #f1e5d8;
+font-size: 11px;
+transition:
+background 0.2s ease,
+border-color 0.2s ease,
+box-shadow 0.2s ease;
+}
+
+.edit-profile-input-group input::placeholder {
+color: #766458;
+}
+
+.edit-profile-input-group input:focus {
+background: #2a1e18;
+border-color: #80583d;
+box-shadow:
+0 0 0 3px rgba(168, 117, 77, 0.08);
+}
+
+.edit-username-input {
+position: relative;
+display: flex;
+align-items: center;
+}
+
+.edit-username-input span {
+position: absolute;
+left: 11px;
+color: #806e61;
+font-size: 11px;
+pointer-events: none;
+}
+
+.edit-username-input input {
+padding-left: 23px;
+}
+
+.edit-profile-actions {
+display: flex;
+gap: 8px;
+margin-top: 2px;
+}
+
+.edit-profile-actions button {
+height: 38px;
+border-radius: 9px;
+font-size: 11px;
+font-weight: 600;
+cursor: pointer;
+transition:
+background 0.2s ease,
+border-color 0.2s ease,
+transform 0.15s ease;
+}
+
+.edit-profile-cancel {
+flex: 1;
+border: 1px solid #463127;
+background: #241a15;
+color: #a18e7e;
+}
+
+.edit-profile-cancel:hover:not(:disabled) {
+background: #2a1e18;
+border-color: #5a3d2c;
+color: #e9dbce;
+}
+
+.edit-profile-save {
+flex: 1;
+border: 1px solid #8a6042;
+background: #704b35;
+color: #fff3e7;
+}
+
+.edit-profile-save:hover:not(:disabled) {
+background: #80583d;
+transform: translateY(-1px);
+}
+
+.edit-profile-actions button:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+}
+
+.edit-profile-button {
+width: 100%;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 7px;
+margin-top: 4px;
+border: 1px solid #463127;
+border-radius: 9px;
+background: #30221c;
+color: #b98252;
+font-size: 11px;
+font-weight: 600;
+cursor: pointer;
+transition:
+background 0.2s ease,
+border-color 0.2s ease,
+color 0.2s ease;
+}
+
+.edit-profile-button:hover {
+background: #35261e;
+border-color: #5a3d2c;
+color: #c49368;
+}
+
+.edit-profile-button svg {
+font-size: 14px;
+}
+
 /* Profile actions */
 
 .profile-section {

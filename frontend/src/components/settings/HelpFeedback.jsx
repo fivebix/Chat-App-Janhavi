@@ -1,4 +1,10 @@
+import { useState } from "react";
 import "../../style/HelpFeedback.css";
+import HelpCenter from "./HelpCenter";
+import ContactSupport from "./ContactSupport";
+import SendFeedback from "./SendFeedback";
+import PrivacyPolicy from "./PrivacyPolicy";
+import TermsPrivacy from "./TermsPrivacy";
 
 import {
 FiArrowLeft,
@@ -9,8 +15,9 @@ FiShield,
 FiSend,
 } from "react-icons/fi";
 
-
 const HelpFeedback = ({ onBack }) => {
+const [activeScreen, setActiveScreen] = useState(null);
+
 const helpOptions = [
 {
 id: "help-center",
@@ -49,6 +56,46 @@ description:
 },
 ];
 
+if (activeScreen === "help-center") {
+return (
+<HelpCenter
+onBack={() => setActiveScreen(null)}
+/>
+);
+}
+
+if (activeScreen === "contact") {
+return (
+<ContactSupport
+  onBack={() => setActiveScreen(null)}
+/>
+);
+}
+
+if (activeScreen === "feedback") {
+	return (
+		<SendFeedback
+			onBack={() => setActiveScreen(null)}
+		/>
+	);
+}
+
+if (activeScreen === "privacy") {
+	return (
+		<PrivacyPolicy
+			onBack={() => setActiveScreen(null)}
+		/>
+	);
+}
+
+if (activeScreen === "terms") {
+	return (
+		<TermsPrivacy
+			onBack={() => setActiveScreen(null)}
+		/>
+	);
+}
+
 return (
 <div className="help-feedback">
 <div className="help-feedback-header">
@@ -80,6 +127,28 @@ or share your feedback about ChatApp.
 key={option.id}
 type="button"
 className="help-feedback-item"
+onClick={() => {
+if (option.id === "help-center") {
+setActiveScreen("help-center");
+}
+
+if (option.id === "contact") {
+		setActiveScreen("contact");
+}
+
+if (option.id === "feedback") {
+		setActiveScreen("feedback");
+}
+
+
+if (option.id === "privacy") {
+  setActiveScreen("privacy");
+}
+
+if (option.id === "terms") {
+		setActiveScreen("terms");
+}
+}}
 >
 <div className="help-feedback-icon">
 {option.icon}

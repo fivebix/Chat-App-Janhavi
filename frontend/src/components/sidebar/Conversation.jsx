@@ -1,12 +1,15 @@
 import "../../style/Conversation.css";
 
+import { FaThumbtack } from "react-icons/fa";
+
 import {
 FiArchive,
-FiBookmark,
 FiCheck,
 FiChevronDown,
 FiChevronRight,
 FiClock,
+FiEye,
+FiEyeOff,
 FiHeart,
 FiLock,
 FiPaperclip,
@@ -68,6 +71,10 @@ const [isMuted, setIsMuted] = useState(
 conversation?.isMuted || false
 );
 
+const [muteExpiresAt, setMuteExpiresAt] = useState(
+conversation?.muteExpiresAt || null
+);
+
 const [isLocked, setIsLocked] = useState(
 conversation?.isLocked || false
 );
@@ -84,6 +91,49 @@ const [isArchived, setIsArchived] = useState(
 conversation?.isArchived || false
 );
 
+const [isBlocked, setIsBlocked] = useState(
+conversation?.isBlocked || false
+);
+
+const [showClearChatConfirm, setShowClearChatConfirm] = useState(false);
+
+const [showPasswordModal, setShowPasswordModal] =
+useState(false);
+
+const [password, setPassword] = useState("");
+const [confirmPassword, setConfirmPassword] =
+useState("");
+
+const [showPassword, setShowPassword] =
+useState(false);
+
+const [showConfirmPassword, setShowConfirmPassword] =
+useState(false);
+
+const [passwordLoading, setPasswordLoading] =
+useState(false);
+
+const [passwordError, setPasswordError] =
+useState("");
+
+const [showVerifyPasswordModal, setShowVerifyPasswordModal] =
+useState(false);
+
+const [verifyPasswordMode, setVerifyPasswordMode] =
+useState("open");
+
+const [verifyPassword, setVerifyPassword] =
+useState("");
+
+const [showVerifyPassword, setShowVerifyPassword] =
+useState(false);
+
+const [verifyPasswordError, setVerifyPasswordError] =
+useState("");
+
+const [verifyPasswordLoading, setVerifyPasswordLoading] =
+useState(false);
+
 if (!conversation) return null;
 
 const isSelected =
@@ -92,13 +142,29 @@ selectedConversation?._id === conversation._id;
 const isOnline =
 onlineUsers.includes(conversation._id);
 
+const lastSeenPrivacy =
+conversation.lastSeenPrivacy || "everyone";
+
+const canShowLastSeen =
+lastSeenPrivacy === "everyone" ||
+lastSeenPrivacy === "contacts";
+
+const hasVisibleLastSeen =
+Object.prototype.hasOwnProperty.call(
+lastSeenUsers,
+conversation._id
+);
+
 const lastSeen =
-lastSeenUsers[conversation._id] ||
-conversation.lastSeen;
+canShowLastSeen
+? hasVisibleLastSeen
+? lastSeenUsers[conversation._id]
+: conversation.lastSeen
+: null;
 
 const formatLastSeen = (date) => {
 if (!date) {
-return "Last seen recently";
+return null;
 }
 
 const lastSeenDate = new Date(date);
@@ -139,6 +205,8 @@ return `Last seen ${diffInDays}d ago`;
 return `Last seen ${lastSeenDate.toLocaleDateString()}`;
 };
 
+const lastSeenText = formatLastSeen(lastSeen);
+
 const lastMessagePreview =
 conversation.lastMessagePreview || "";
 
@@ -147,6 +215,15 @@ conversation.lastMessageTime || "";
 
 const handleConversationClick = () => {
 if (isMenuOpen) return;
+
+if (isLocked) {
+setVerifyPasswordMode("open");
+setVerifyPassword("");
+setVerifyPasswordError("");
+setShowVerifyPassword(false);
+setShowVerifyPasswordModal(true);
+return;
+}
 
 clearUnreadCount(conversation._id);
 setSelectedConversation(conversation);
@@ -360,63 +437,728 @@ handleEscape
 };
 }, [conversation._id]);
 
-const handleArchive = (event) => {
+const handleArchive = async (event) => {
 event.stopPropagation();
 
-setIsArchived((current) => !current);
+if (!conversation.conversationId) {
+console.error(
+"Cannot archive: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/archive`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to archive chat"
+);
+}
+
+setIsArchived(data.isArchived);
+
 setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+if (data.isArchived) {
+if (
+selectedConversation?._id ===
+conversation._id
+) {
+setSelectedConversation(null);
+}
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-archived",
+{
+detail:
+conversation._id,
+}
+)
+);
+} else {
+window.dispatchEvent(
+new CustomEvent(
+"conversation-unarchived",
+{
+detail:
+conversation._id,
+}
+)
+);
+}
+} catch (error) {
+console.error(
+"Error archiving conversation:",
+error.message
+);
+}
 };
 
-const handleLock = (event) => {
+const handleLock = async (event) => {
 event.stopPropagation();
 
-setIsLocked((current) => !current);
+if (!conversation.conversationId) {
+console.error(
+"Cannot lock: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/chat-lock/status`,
+{
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to check chat lock status"
+);
+}
+
 setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+if (!data.hasPassword) {
+setPassword("");
+setConfirmPassword("");
+setPasswordError("");
+setShowPassword(false);
+setShowConfirmPassword(false);
+setShowPasswordModal(true);
+return;
+}
+
+if (isLocked) {
+setVerifyPasswordMode("unlock");
+setVerifyPassword("");
+setVerifyPasswordError("");
+setShowVerifyPassword(false);
+setShowVerifyPasswordModal(true);
+return;
+}
+
+const lockResponse = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/lock`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const lockData =
+await lockResponse.json();
+
+if (!lockResponse.ok) {
+throw new Error(
+lockData.error ||
+"Failed to lock chat"
+);
+}
+
+setIsLocked(lockData.isLocked);
+
+if (lockData.isLocked) {
+if (
+selectedConversation?._id ===
+conversation._id
+) {
+setSelectedConversation(null);
+}
+}
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-locked",
+{
+detail: {
+conversationId:
+conversation._id,
+isLocked:
+lockData.isLocked,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error updating chat lock:",
+error.message
+);
+}
 };
 
-const handleMute = (event) => {
-event.stopPropagation();
+const handleCreatePassword = async (
+event
+) => {
+event.preventDefault();
 
-setIsMuted((current) => !current);
+if (
+!password ||
+!confirmPassword
+) {
+setPasswordError(
+"Please enter and confirm your password"
+);
+return;
+}
+
+if (password !== confirmPassword) {
+setPasswordError(
+"Passwords do not match"
+);
+return;
+}
+
+if (password.length < 4) {
+setPasswordError(
+"Password must be at least 4 characters long"
+);
+return;
+}
+
+try {
+setPasswordLoading(true);
+setPasswordError("");
+
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/chat-lock/password`,
+{
+method: "POST",
+headers: {
+"Content-Type":
+"application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+password,
+confirmPassword,
+}),
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to create chat lock password"
+);
+}
+
+setPassword("");
+setConfirmPassword("");
+setPasswordError("");
+setShowPassword(false);
+setShowConfirmPassword(false);
+setShowPasswordModal(false);
+
+const lockResponse = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/lock`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const lockData =
+await lockResponse.json();
+
+if (!lockResponse.ok) {
+throw new Error(
+lockData.error ||
+"Failed to lock chat"
+);
+}
+
+setIsLocked(lockData.isLocked);
+
+if (lockData.isLocked) {
+if (
+selectedConversation?._id ===
+conversation._id
+) {
+setSelectedConversation(null);
+}
+}
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-locked",
+{
+detail: {
+conversationId:
+conversation._id,
+isLocked:
+lockData.isLocked,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error creating chat lock password:",
+error.message
+);
+
+setPasswordError(error.message);
+} finally {
+setPasswordLoading(false);
+}
+};
+
+const handleVerifyPassword = async (
+event
+) => {
+event.preventDefault();
+
+if (!verifyPassword) {
+setVerifyPasswordError(
+"Please enter your password"
+);
+return;
+}
+
+try {
+setVerifyPasswordLoading(true);
+setVerifyPasswordError("");
+
+const token =
+localStorage.getItem("chat-token");
+
+if (
+verifyPasswordMode ===
+"unlock"
+) {
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/lock`,
+{
+method: "PUT",
+headers: {
+"Content-Type":
+"application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+password:
+verifyPassword,
+}),
+}
+);
+
+const data =
+await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Incorrect password"
+);
+}
+
+setIsLocked(data.isLocked);
+
+setShowVerifyPasswordModal(
+false
+);
+setVerifyPassword("");
+setVerifyPasswordError("");
+setShowVerifyPassword(false);
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-locked",
+{
+detail: {
+conversationId:
+conversation._id,
+isLocked:
+data.isLocked,
+},
+}
+)
+);
+
+return;
+}
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/chat-lock/verify`,
+{
+method: "POST",
+headers: {
+"Content-Type":
+"application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+password:
+verifyPassword,
+}),
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Incorrect password"
+);
+}
+
+setShowVerifyPasswordModal(
+false
+);
+setVerifyPassword("");
+setVerifyPasswordError("");
+setShowVerifyPassword(false);
+
+clearUnreadCount(
+conversation._id
+);
+
+setSelectedConversation(
+conversation
+);
+} catch (error) {
+setVerifyPasswordError(
+error.message
+);
+} finally {
+setVerifyPasswordLoading(false);
+}
+};
+
+const handleMute = async (duration) => {
+if (!conversation.conversationId) {
+console.error(
+"Cannot mute: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/mute`,
+{
+method: "PUT",
+headers: {
+"Content-Type":
+"application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+duration,
+}),
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to update mute settings"
+);
+}
+
+setIsMuted(data.isMuted);
+setMuteExpiresAt(data.expiresAt);
+
 setShowMuteMenu(false);
 setIsMenuOpen(false);
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-muted",
+{
+detail: {
+conversationId:
+conversation._id,
+isMuted:
+data.isMuted,
+muteExpiresAt:
+data.expiresAt,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error updating mute settings:",
+error.message
+);
+}
 };
 
-const handlePin = (event) => {
+const handlePin = async (event) => {
 event.stopPropagation();
 
-setIsPinned((current) => !current);
+if (!conversation.conversationId) {
+console.error(
+"Cannot pin: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/pin`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to pin chat"
+);
+}
+
+setIsPinned(data.isPinned);
+
 setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-pinned",
+{
+detail: {
+conversationId:
+conversation._id,
+isPinned:
+data.isPinned,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error pinning conversation:",
+error.message
+);
+}
 };
 
 const handleMarkUnread = (event) => {
 event.stopPropagation();
 
+const newUnreadCount = Math.max(unreadCount, 1);
+
 setUnreadCount(
 conversation._id,
-Math.max(unreadCount, 1)
+newUnreadCount
 );
 
 setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+window.dispatchEvent(
+new CustomEvent("conversation-marked-unread", {
+detail: {
+conversationId: conversation._id,
+unreadCount: newUnreadCount,
+},
+})
+);
 };
 
-const handleFavorite = (event) => {
+
+const handleFavorite = async (event) => {
 event.stopPropagation();
 
-setIsFavorite((current) => !current);
+if (!conversation.conversationId) {
+console.error(
+"Cannot favorite: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/favorite`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to update favorite"
+);
+}
+
+setIsFavorite(data.isFavorite);
+
 setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-favorite-updated",
+{
+detail: {
+conversationId:
+conversation._id,
+isFavorite:
+data.isFavorite,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error updating favorite:",
+error.message
+);
+}
 };
 
-const handleBlock = (event) => {
+const handleBlock = async (event) => {
 event.stopPropagation();
 
-setIsMenuOpen(false);
+if (!conversation?._id) {
+console.error("Cannot block: user ID is missing");
+return;
+}
+
+try {
+const token = localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/block/${conversation._id}`,
+{
+method: "PUT",
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error || "Failed to update block status"
+);
+}
+
+setIsBlocked(data.isBlocked);
+
+		setSelectedConversation({ ...conversation, isBlocked: data.isBlocked });
+
+		setIsMenuOpen(false);
+setShowMuteMenu(false);
+setShowListMenu(false);
+
+window.dispatchEvent(
+new CustomEvent("conversation-blocked", {
+detail: {
+userId: conversation._id,
+isBlocked: data.isBlocked,
+},
+})
+);
+} catch (error) {
+console.error(
+"Error updating block status:",
+error.message
+);
+}
 };
+
+
 
 const handleClearChat = (event) => {
-event.stopPropagation();
+	event.stopPropagation();
 
-setIsMenuOpen(false);
+	setIsMenuOpen(false);
+	setShowMuteMenu(false);
+	setShowListMenu(false);
+	setShowClearChatConfirm(true);
+};
+
+const confirmClearChat = async () => {
+	if (!conversation?.conversationId) {
+		console.error("Cannot clear chat: conversationId is missing");
+		return;
+	}
+
+	try {
+		const token = localStorage.getItem("chat-token");
+		const response = await fetch(
+			`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/clear`,
+			{ method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+		);
+		const data = await response.json();
+		if (!response.ok) throw new Error(data.error || "Failed to clear chat");
+		setShowClearChatConfirm(false);
+		window.dispatchEvent(new CustomEvent("conversation-cleared", { detail: { conversationId: conversation._id } }));
+	} catch (error) {
+		console.error("Error clearing chat:", error.message);
+	}
 };
 
 const handleDeleteChat = (event) => {
@@ -425,11 +1167,413 @@ event.stopPropagation();
 setIsMenuOpen(false);
 };
 
-const handleListOption = (event) => {
+const handleListOption = async (event) => {
 event.stopPropagation();
+
+const listName = event.currentTarget
+.querySelector("span")
+?.textContent;
+
+if (!listName) {
+return;
+}
+
+if (!conversation.conversationId) {
+console.error(
+"Cannot update list: conversationId is missing"
+);
+return;
+}
+
+try {
+const token =
+localStorage.getItem("chat-token");
+
+const response = await fetch(
+`${import.meta.env.VITE_API_URL}/api/users/conversations/${conversation.conversationId}/list`,
+{
+method: "PUT",
+headers: {
+"Content-Type": "application/json",
+Authorization: `Bearer ${token}`,
+},
+body: JSON.stringify({
+listName,
+}),
+}
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+throw new Error(
+data.error ||
+"Failed to update conversation list"
+);
+}
 
 setShowListMenu(false);
 setIsMenuOpen(false);
+
+window.dispatchEvent(
+new CustomEvent(
+"conversation-list-updated",
+{
+detail: {
+conversationId:
+conversation._id,
+listName,
+isAdded: data.isAdded,
+},
+}
+)
+);
+} catch (error) {
+console.error(
+"Error updating conversation list:",
+error.message
+);
+}
+};
+
+const renderPasswordModal = () => {
+if (!showPasswordModal) return null;
+
+return createPortal(
+<div
+className="chat-lock-modal-overlay"
+onClick={() =>
+!passwordLoading &&
+setShowPasswordModal(false)
+}
+>
+<div
+className="chat-lock-modal"
+onClick={(event) =>
+event.stopPropagation()
+}
+>
+<div className="chat-lock-modal-icon">
+<FiLock />
+</div>
+
+<h3>
+Create Chat Lock Password
+</h3>
+
+<p>
+Create a password to protect
+your locked chats.
+</p>
+
+<form
+onSubmit={
+handleCreatePassword
+}
+>
+<div className="chat-lock-password-field">
+<input
+type={
+showPassword
+? "text"
+: "password"
+}
+value={password}
+onChange={(event) =>
+setPassword(
+event.target.value
+)
+}
+placeholder="Enter password"
+autoFocus
+disabled={
+passwordLoading
+}
+/>
+
+<button
+type="button"
+className="chat-lock-password-toggle"
+onClick={() =>
+setShowPassword(
+(current) =>
+!current
+)
+}
+disabled={
+passwordLoading
+}
+aria-label={
+showPassword
+? "Hide password"
+: "Show password"
+}
+>
+{showPassword ? (
+<FiEyeOff />
+) : (
+<FiEye />
+)}
+</button>
+</div>
+
+<div className="chat-lock-password-field">
+<input
+type={
+showConfirmPassword
+? "text"
+: "password"
+}
+value={
+confirmPassword
+}
+onChange={(event) =>
+setConfirmPassword(
+event.target.value
+)
+}
+placeholder="Confirm password"
+disabled={
+passwordLoading
+}
+/>
+
+<button
+type="button"
+className="chat-lock-password-toggle"
+onClick={() =>
+setShowConfirmPassword(
+(current) =>
+!current
+)
+}
+disabled={
+passwordLoading
+}
+aria-label={
+showConfirmPassword
+? "Hide password"
+: "Show password"
+}
+>
+{showConfirmPassword ? (
+<FiEyeOff />
+) : (
+<FiEye />
+)}
+</button>
+</div>
+
+{passwordError && (
+<p className="chat-lock-error">
+{passwordError}
+</p>
+)}
+
+<div className="chat-lock-modal-actions">
+<button
+type="button"
+className="chat-lock-cancel"
+onClick={() => {
+setShowPasswordModal(
+false
+);
+setShowPassword(
+false
+);
+setShowConfirmPassword(
+false
+);
+}}
+disabled={
+passwordLoading
+}
+>
+Cancel
+</button>
+
+<button
+type="submit"
+className="chat-lock-save"
+disabled={
+passwordLoading
+}
+>
+{passwordLoading
+? "Creating..."
+: "Create Password"}
+</button>
+</div>
+</form>
+</div>
+</div>,
+document.body
+);
+};
+
+const renderVerifyPasswordModal = () => {
+if (!showVerifyPasswordModal) {
+return null;
+}
+
+return createPortal(
+<div
+className="chat-lock-modal-overlay"
+onClick={() => {
+if (!verifyPasswordLoading) {
+setShowVerifyPasswordModal(
+false
+);
+setShowVerifyPassword(
+false
+);
+}
+}}
+>
+<div
+className="chat-lock-modal"
+onClick={(event) =>
+event.stopPropagation()
+}
+>
+<div className="chat-lock-modal-icon">
+<FiLock />
+</div>
+
+<h3>Locked Chat</h3>
+
+<p>
+{verifyPasswordMode ===
+"unlock"
+? "Enter your chat lock password to unlock this conversation."
+: "Enter your chat lock password to open this conversation."}
+</p>
+
+<form
+onSubmit={
+handleVerifyPassword
+}
+>
+<div className="chat-lock-password-field">
+<input
+type={
+showVerifyPassword
+? "text"
+: "password"
+}
+value={
+verifyPassword
+}
+onChange={(event) =>
+setVerifyPassword(
+event.target.value
+)
+}
+placeholder="Enter password"
+autoFocus
+disabled={
+verifyPasswordLoading
+}
+/>
+
+<button
+type="button"
+className="chat-lock-password-toggle"
+onClick={() =>
+setShowVerifyPassword(
+(current) =>
+!current
+)
+}
+disabled={
+verifyPasswordLoading
+}
+aria-label={
+showVerifyPassword
+? "Hide password"
+: "Show password"
+}
+>
+{showVerifyPassword ? (
+<FiEyeOff />
+) : (
+<FiEye />
+)}
+</button>
+</div>
+
+{verifyPasswordError && (
+<p className="chat-lock-error">
+{
+verifyPasswordError
+}
+</p>
+)}
+
+<div className="chat-lock-modal-actions">
+<button
+type="button"
+className="chat-lock-cancel"
+onClick={() => {
+setShowVerifyPasswordModal(
+false
+);
+setVerifyPassword(
+""
+);
+setVerifyPasswordError(
+""
+);
+setShowVerifyPassword(
+false
+);
+}}
+disabled={
+verifyPasswordLoading
+}
+>
+Cancel
+</button>
+
+<button
+type="submit"
+className="chat-lock-save"
+disabled={
+verifyPasswordLoading
+}
+>
+{verifyPasswordLoading
+? "Verifying..."
+: verifyPasswordMode ===
+"unlock"
+? "Unlock Chat"
+: "Open Chat"}
+</button>
+</div>
+</form>
+</div>
+</div>,
+document.body
+);
+};
+
+const renderClearChatToast = () => {
+	if (!showClearChatConfirm) return null;
+	return createPortal(
+		<div className="clear-chat-toast-overlay" onClick={() => setShowClearChatConfirm(false)}>
+			<div className="clear-chat-toast" onClick={(event) => event.stopPropagation()}>
+				<div className="clear-chat-toast-content">
+					<h3>Clear this chat?</h3>
+					<p>This will delete all messages from this conversation.</p>
+				</div>
+				<div className="clear-chat-toast-actions">
+					<button type="button" className="clear-chat-cancel" onClick={() => setShowClearChatConfirm(false)}>Cancel</button>
+					<button type="button" className="clear-chat-confirm" onClick={confirmClearChat}>Clear chat</button>
+				</div>
+			</div>
+		</div>,
+		document.body
+	);
 };
 
 const renderMenu = () => {
@@ -486,8 +1630,14 @@ className="conversation-menu-item"
 onClick={(event) => {
 event.stopPropagation();
 
+if (isMuted) {
+handleMute(null);
+return;
+}
+
 setShowMuteMenu(
-(current) => !current
+(current) =>
+!current
 );
 
 setShowListMenu(false);
@@ -505,7 +1655,9 @@ setShowListMenu(false);
 : "Mute notifications"}
 </span>
 
+{!isMuted && (
 <FiChevronRight className="menu-arrow" />
+)}
 </button>
 
 {showMuteMenu && (
@@ -513,25 +1665,43 @@ setShowListMenu(false);
 <button
 type="button"
 className="conversation-menu-item"
-onClick={handleMute}
+onClick={() =>
+handleMute(
+"8hours"
+)
+}
 >
-<span>8 hours</span>
+<span>
+8 hours
+</span>
 </button>
 
 <button
 type="button"
 className="conversation-menu-item"
-onClick={handleMute}
+onClick={() =>
+handleMute(
+"1week"
+)
+}
 >
-<span>1 week</span>
+<span>
+1 week
+</span>
 </button>
 
 <button
 type="button"
 className="conversation-menu-item"
-onClick={handleMute}
+onClick={() =>
+handleMute(
+"always"
+)
+}
 >
-<span>Always</span>
+<span>
+Always
+</span>
 </button>
 </div>
 )}
@@ -542,7 +1712,7 @@ type="button"
 className="conversation-menu-item"
 onClick={handlePin}
 >
-<FiBookmark />
+<FaThumbtack />
 
 <span>
 {isPinned
@@ -558,7 +1728,9 @@ onClick={handleMarkUnread}
 >
 <FiCheck />
 
-<span>Mark as unread</span>
+<span>
+Mark as unread
+</span>
 </button>
 
 <button
@@ -583,7 +1755,8 @@ onClick={(event) => {
 event.stopPropagation();
 
 setShowListMenu(
-(current) => !current
+(current) =>
+!current
 );
 
 setShowMuteMenu(false);
@@ -591,7 +1764,9 @@ setShowMuteMenu(false);
 >
 <FiPaperclip />
 
-<span>Add to list</span>
+<span>
+Add to list
+</span>
 
 <FiChevronRight className="menu-arrow" />
 </button>
@@ -604,6 +1779,9 @@ className="conversation-menu-item"
 onClick={handleListOption}
 >
 <span>Work</span>
+{conversation?.lists?.some(
+(list) => list.listName === "Work"
+) && <FiCheck />}
 </button>
 
 <button
@@ -612,6 +1790,9 @@ className="conversation-menu-item"
 onClick={handleListOption}
 >
 <span>Family</span>
+{conversation?.lists?.some(
+(list) => list.listName === "Family"
+) && <FiCheck />}
 </button>
 
 <button
@@ -620,6 +1801,9 @@ className="conversation-menu-item"
 onClick={handleListOption}
 >
 <span>Friends</span>
+{conversation?.lists?.some(
+(list) => list.listName === "Friends"
+) && <FiCheck />}
 </button>
 </div>
 )}
@@ -633,8 +1817,9 @@ className="conversation-menu-item danger"
 onClick={handleBlock}
 >
 <FiUserX />
-
-<span>Block</span>
+<span>
+{isBlocked ? "Unblock" : "Block"}
+</span>
 </button>
 
 <button
@@ -666,33 +1851,67 @@ return (
 <div
 className={`conversation-card ${
 isSelected ? "active" : ""
-} ${isArchived ? "archived" : ""}`}
-onClick={handleConversationClick}
+} ${
+isArchived ? "archived" : ""
+}`}
+onClick={
+handleConversationClick
+}
 >
 <div className="conversation-content">
 <div className="conversation-avatar-wrapper">
+{conversation.profilePic ? (
 <img
-src={conversation.profilePic}
-alt={conversation.fullName}
+src={
+conversation.profilePic
+}
+alt={
+conversation.fullName
+}
 className="conversation-avatar"
 />
+) : (
+<div className="conversation-avatar conversation-avatar-fallback">
+{conversation.fullName
+?.charAt(0)
+?.toUpperCase() ||
+"?"}
+</div>
+)}
 
 {isOnline && (
 <span className="status-indicator"></span>
 )}
 </div>
 
-<div className="conversation-details">
+<div
+className={`conversation-details ${
+!isOnline &&
+!lastSeenText &&
+!lastMessagePreview
+? "conversation-details-centered"
+: ""
+}`}
+>
 <div className="conversation-top-row">
-<h4>{conversation.fullName}</h4>
+<h4>
+{
+conversation.fullName
+}
+</h4>
 
 {lastMessageTime && (
 <span className="conversation-time">
-{lastMessageTime}
+{
+lastMessageTime
+}
 </span>
 )}
 </div>
 
+{(isOnline ||
+lastSeenText ||
+lastMessagePreview) && (
 <div className="conversation-bottom-row">
 <div className="conversation-preview">
 {isLocked && (
@@ -701,24 +1920,31 @@ className="conversation-avatar"
 
 {isOnline ? (
 <span className="conversation-status-online">
-  Online
+Online
 </span>
-) : (
+) : lastSeenText ? (
 <>
-  <FiClock className="conversation-meta-icon" />
+<FiClock className="conversation-meta-icon" />
 
-  <span className="conversation-status-offline">
-    {formatLastSeen(lastSeen)}
-  </span>
+<span className="conversation-status-offline">
+{
+lastSeenText
+}
+</span>
 </>
-)}
+) : null}
 
+{(isOnline ||
+lastSeenText) && (
 <span className="conversation-preview-separator">
 ·
 </span>
+)}
 
 <span className="last-message-preview">
-{lastMessagePreview}
+{
+lastMessagePreview
+}
 </span>
 </div>
 
@@ -728,7 +1954,7 @@ className="conversation-avatar"
 )}
 
 {isPinned && (
-<FiBookmark className="conversation-pin-icon" />
+<FaThumbtack className="conversation-pin-icon" />
 )}
 
 {isFavorite && (
@@ -737,17 +1963,22 @@ className="conversation-avatar"
 
 {unreadCount > 0 && (
 <span className="unread-badge">
-  {unreadCount > 99
-    ? "99+"
-    : unreadCount}
+{unreadCount >
+99
+? "99+"
+: unreadCount}
 </span>
 )}
 
 <button
-ref={menuButtonRef}
+ref={
+menuButtonRef
+}
 type="button"
 className="conversation-menu-button"
-onClick={handleMenuToggle}
+onClick={
+handleMenuToggle
+}
 aria-label="Chat options"
 title="Chat options"
 >
@@ -755,6 +1986,7 @@ title="Chat options"
 </button>
 </div>
 </div>
+)}
 </div>
 </div>
 </div>
@@ -764,6 +1996,9 @@ title="Chat options"
 )}
 
 {renderMenu()}
+{renderPasswordModal()}
+{renderVerifyPasswordModal()}
+{renderClearChatToast()}
 </>
 );
 };

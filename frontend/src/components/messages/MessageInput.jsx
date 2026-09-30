@@ -25,12 +25,13 @@ import useSendMessage from "../../hooks/useSendMessage";
 import useConversation from "../../zustand/useConversation";
 import { useSocketContext } from "../../context/SocketContext";
 
-const MessageInput = () => {
+const MessageInput = ({ isBlocked }) => {
 const [message, setMessage] = useState("");
 const [selectedFile, setSelectedFile] =
 useState(null);
 const [showEmojiPicker, setShowEmojiPicker] =
 useState(false);
+
 
 const typingTimeoutRef = useRef(null);
 const fileInputRef = useRef(null);
@@ -420,6 +421,16 @@ selectedConversation?._id,
 socket,
 selectedConversation?._id,
 ]);
+
+if (isBlocked) {
+return (
+<div className="blocked-message-container">
+<span>
+You can't send messages to this user.
+</span>
+</div>
+);
+}
 
 return (
 <form

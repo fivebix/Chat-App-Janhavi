@@ -158,3 +158,376 @@ width: 17px;
 height: 17px;
 }
 }
+
+/* Security notifications */
+
+.account-settings-content {
+padding: 24px;
+}
+
+.security-notification-card {
+display: flex;
+align-items: flex-start;
+gap: 14px;
+padding: 18px;
+margin-bottom: 18px;
+border: 1px solid #3d2b22;
+border-radius: 12px;
+background: #241a15;
+}
+
+.security-notification-icon {
+width: 42px;
+height: 42px;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+border: 1px solid #463127;
+border-radius: 10px;
+background: #30221c;
+color: #b98252;
+}
+
+.security-notification-icon svg {
+width: 19px;
+height: 19px;
+}
+
+.security-notification-card h2 {
+margin: 0 0 5px;
+color: #f4e9dc;
+font-size: 14px;
+font-weight: 600;
+}
+
+.security-notification-card p {
+margin: 0;
+color: #806e61;
+font-size: 11px;
+line-height: 1.5;
+}
+
+.security-notification-option {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 20px;
+padding: 16px 4px;
+border-bottom: 1px solid rgba(196, 147, 104, 0.1);
+}
+
+.security-notification-option h3 {
+margin: 0 0 5px;
+color: #e9dbce;
+font-size: 13px;
+font-weight: 500;
+}
+
+.security-notification-option p {
+max-width: 480px;
+margin: 0;
+color: #806e61;
+font-size: 10px;
+line-height: 1.5;
+}
+
+/* Toggle */
+
+.settings-toggle {
+position: relative;
+width: 42px;
+height: 23px;
+flex-shrink: 0;
+cursor: pointer;
+}
+
+.settings-toggle input {
+position: absolute;
+width: 0;
+height: 0;
+opacity: 0;
+}
+
+.settings-toggle-slider {
+position: absolute;
+inset: 0;
+border: 1px solid #463127;
+border-radius: 20px;
+background: #30221c;
+transition:
+background 0.2s ease,
+border-color 0.2s ease;
+}
+
+.settings-toggle-slider::before {
+content: "";
+position: absolute;
+width: 17px;
+height: 17px;
+left: 2px;
+top: 2px;
+border-radius: 50%;
+background: #806e61;
+transition:
+transform 0.2s ease,
+background 0.2s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider {
+background: #704b35;
+border-color: #8a6042;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider::before {
+transform: translateX(19px);
+background: #fff1df;
+}
+
+.settings-toggle input:focus-visible + .settings-toggle-slider {
+box-shadow: 0 0 0 3px rgba(168, 117, 77, 0.12);
+}
+
+@media (max-width: 700px) {
+.account-settings-content {
+padding: 18px 16px;
+}
+
+.security-notification-card {
+padding: 15px;
+}
+
+.security-notification-option {
+gap: 14px;
+}
+}
+
+@media (max-width: 420px) {
+.account-settings-content {
+padding: 14px 12px;
+}
+
+.security-notification-card {
+gap: 11px;
+padding: 14px;
+}
+
+.security-notification-icon {
+width: 36px;
+height: 36px;
+}
+
+.security-notification-option {
+align-items: flex-start;
+}
+
+.security-notification-option h3 {
+font-size: 12px;
+}
+
+.security-notification-option p {
+font-size: 9px;
+}
+}
+
+/* Request account info */
+
+.account-info-details {
+padding: 16px;
+margin-bottom: 18px;
+border: 1px solid #3d2b22;
+border-radius: 12px;
+background: #241a15;
+}
+
+.account-info-details h3 {
+margin: 0 0 6px;
+color: #e9dbce;
+font-size: 13px;
+font-weight: 600;
+}
+
+.account-info-details p {
+margin: 0 0 10px;
+color: #806e61;
+font-size: 10px;
+line-height: 1.5;
+}
+
+.account-info-details ul {
+margin: 0;
+padding-left: 18px;
+color: #a18e7e;
+}
+
+.account-info-details li {
+margin-bottom: 7px;
+font-size: 10px;
+line-height: 1.4;
+}
+
+.account-info-details li:last-child {
+margin-bottom: 0;
+}
+
+.account-info-request-button {
+width: 100%;
+height: 42px;
+display: flex;
+align-items: center;
+justify-content: center;
+border: 1px solid #8a6042;
+border-radius: 9px;
+background: #704b35;
+color: #fff3e7;
+font-size: 11px;
+font-weight: 600;
+cursor: pointer;
+transition:
+background 0.2s ease,
+border-color 0.2s ease,
+transform 0.15s ease;
+}
+
+.account-info-request-button:hover:not(:disabled) {
+background: #80583d;
+border-color: #9a6b4a;
+transform: translateY(-1px);
+}
+
+.account-info-request-button:active:not(:disabled) {
+transform: scale(0.98);
+}
+
+.account-info-request-button:disabled {
+opacity: 0.65;
+cursor: not-allowed;
+}
+
+.account-info-status {
+margin: 12px 2px 0;
+color: #a18e7e;
+font-size: 10px;
+line-height: 1.5;
+text-align: center;
+}
+
+@media (max-width: 700px) {
+.account-info-details {
+padding: 15px;
+}
+
+.account-info-request-button {
+height: 40px;
+}
+}
+
+@media (max-width: 420px) {
+.account-info-details {
+padding: 14px;
+}
+
+.account-info-details h3 {
+font-size: 12px;
+}
+
+.account-info-details p,
+.account-info-details li {
+font-size: 9px;
+}
+
+.account-info-request-button {
+font-size: 10px;
+}
+}
+
+.account-delete-button {
+width: 100%;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding: 13px 16px;
+border: 1px solid rgba(220, 98, 85, 0.35);
+border-radius: 8px;
+background: rgba(120, 48, 38, 0.12);
+color: #dc6255;
+font-size: 14px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.account-delete-button:hover {
+background: rgba(120, 48, 38, 0.2);
+border-color: rgba(220, 98, 85, 0.55);
+}
+
+.account-delete-confirmation {
+margin-top: 20px;
+padding: 18px;
+border: 1px solid rgba(220, 98, 85, 0.3);
+border-radius: 10px;
+background: rgba(120, 48, 38, 0.08);
+}
+
+.account-delete-confirmation h3 {
+margin: 0 0 8px;
+color: #f4e9dc;
+font-size: 16px;
+}
+
+.account-delete-confirmation p {
+margin: 0 0 18px;
+color: #a18e7e;
+font-size: 14px;
+line-height: 1.5;
+}
+
+.account-delete-actions {
+display: flex;
+gap: 10px;
+}
+
+.account-delete-cancel,
+.account-delete-confirm {
+flex: 1;
+padding: 11px 14px;
+border-radius: 7px;
+font-size: 14px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.account-delete-cancel {
+border: 1px solid #3d2b22;
+background: #241a15;
+color: #f4e9dc;
+}
+
+.account-delete-cancel:hover {
+background: #2a1e18;
+}
+
+.account-delete-confirm {
+border: 1px solid #dc6255;
+background: #7a3028;
+color: #fff1ec;
+}
+
+.account-delete-confirm:hover {
+background: #8d382f;
+}
+
+.account-delete-cancel:disabled,
+.account-delete-confirm:disabled,
+.account-delete-button:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+.account-delete-actions {
+flex-direction: column;
+}
+}

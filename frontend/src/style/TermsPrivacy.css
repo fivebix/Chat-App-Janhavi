@@ -1,0 +1,122 @@
+.terms-privacy {
+width: 100%;
+min-height: 100%;
+background: #17110e;
+color: #f4e9dc;
+}
+
+.terms-privacy-header {
+height: 68px;
+display: flex;
+align-items: center;
+gap: 18px;
+padding: 0 22px;
+border-bottom: 1px solid #2d211b;
+}
+
+.terms-privacy-header h2 {
+margin: 0;
+font-size: 22px;
+font-weight: 600;
+}
+
+.terms-privacy-back {
+width: 34px;
+height: 34px;
+display: flex;
+align-items: center;
+justify-content: center;
+border: none;
+border-radius: 8px;
+background: transparent;
+color: #d8c7b8;
+cursor: pointer;
+font-size: 20px;
+}
+
+.terms-privacy-back:hover {
+background: #2a1e18;
+color: #f4e9dc;
+}
+
+.terms-privacy-content {
+max-width: 760px;
+padding: 34px 22px 60px;
+}
+
+.terms-privacy-intro {
+padding-bottom: 26px;
+border-bottom: 1px solid #2d211b;
+margin-bottom: 26px;
+}
+
+.terms-privacy-intro h3 {
+margin: 0 0 10px;
+font-size: 21px;
+font-weight: 600;
+}
+
+.terms-privacy-intro p {
+margin: 0 0 10px;
+color: #a18e7e;
+font-size: 14px;
+line-height: 1.7;
+}
+
+.terms-privacy-intro small {
+color: #806e61;
+font-size: 12px;
+}
+
+.terms-privacy-content section {
+margin-bottom: 26px;
+}
+
+.terms-privacy-content section h3 {
+margin: 0 0 9px;
+color: #e9dbce;
+font-size: 16px;
+font-weight: 600;
+}
+
+.terms-privacy-content section p {
+margin: 0;
+color: #a18e7e;
+font-size: 14px;
+line-height: 1.7;
+}
+
+.terms-privacy-footer {
+margin-top: 34px;
+padding: 16px;
+border: 1px solid #3d2b22;
+border-radius: 10px;
+background: #211813;
+}
+
+.terms-privacy-footer p {
+margin: 0;
+color: #a18e7e;
+font-size: 13px;
+line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+.terms-privacy-header {
+height: 68px;
+padding: 0 18px;
+gap: 14px;
+}
+
+.terms-privacy-header h2 {
+font-size: 19px;
+}
+
+.terms-privacy-content {
+padding: 28px 18px 45px;
+}
+
+.terms-privacy-content section {
+margin-bottom: 23px;
+}
+}

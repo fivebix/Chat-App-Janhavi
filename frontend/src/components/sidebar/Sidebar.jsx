@@ -3,9 +3,11 @@ import { useState } from "react";
 import "../../style/Sidebar.css";
 
 import {
+FiArrowLeft,
 FiMessageSquare,
-FiUser,
+FiSearch,
 FiSettings,
+FiUser,
 } from "react-icons/fi";
 
 import { useAuthContext } from "../../context/AuthContext";
@@ -34,16 +36,22 @@ const { authUser } = useAuthContext();
 const [activeScreen, setActiveScreen] =
 useState("main");
 
+const [isSearchOpen, setIsSearchOpen] =
+useState(false);
+
 const goToMain = () => {
 setActiveScreen("main");
+setIsSearchOpen(false);
 };
 
 const goToSettings = () => {
 setActiveScreen("settings");
+setIsSearchOpen(false);
 };
 
 const goToNewChat = () => {
 setActiveScreen("new-chat");
+setIsSearchOpen(false);
 };
 
 const goToNewContact = () => {
@@ -56,6 +64,11 @@ setActiveScreen("new-group");
 
 const goToNewCommunity = () => {
 setActiveScreen("new-community");
+};
+
+const goToProfile = () => {
+setActiveScreen("profile");
+setIsSearchOpen(false);
 };
 
 if (activeScreen === "profile") {
@@ -217,6 +230,26 @@ onBack={goToSettings}
 return (
 <aside className="sidebar">
 <div className="sidebar-top">
+{isSearchOpen ? (
+<div className="sidebar-search-row">
+<button
+type="button"
+className="sidebar-search-back"
+onClick={() =>
+setIsSearchOpen(false)
+}
+aria-label="Close search"
+title="Close search"
+>
+<FiArrowLeft />
+</button>
+
+<div className="sidebar-search-expanded">
+<SearchInput />
+</div>
+</div>
+) : (
+<div className="sidebar-compact-header">
 <div className="sidebar-brand">
 <div className="brand-logo">
 <FiMessageSquare />
@@ -224,47 +257,46 @@ return (
 
 <div className="brand-info">
 <h2>ChatApp</h2>
-<p>Stay connected</p>
 </div>
 </div>
 
+<div className="sidebar-header-actions">
 <button
 type="button"
-className="sidebar-profile-trigger"
-onClick={() =>
-setActiveScreen("profile")
-}
+className="sidebar-header-profile"
+onClick={goToProfile}
+aria-label="Open profile"
+title="Profile"
 >
-<div className="sidebar-profile-avatar">
 {authUser?.profilePic ? (
 <img
-src={authUser.profilePic}
-alt={authUser.fullName}
+src={
+  authUser.profilePic
+}
+alt={
+  authUser.fullName ||
+  "Profile"
+}
 />
 ) : (
 <FiUser />
 )}
-</div>
-
-<div className="sidebar-profile-info">
-<strong>
-{authUser?.fullName ||
-"My Profile"}
-</strong>
-
-<span>
-@
-{authUser?.username ||
-"username"}
-</span>
-</div>
-
-<span className="sidebar-profile-arrow">
-›
-</span>
 </button>
 
-<SearchInput />
+<button
+type="button"
+className="sidebar-header-search"
+onClick={() =>
+setIsSearchOpen(true)
+}
+aria-label="Search conversations"
+title="Search"
+>
+<FiSearch />
+</button>
+</div>
+</div>
+)}
 </div>
 
 <div className="sidebar-divider"></div>

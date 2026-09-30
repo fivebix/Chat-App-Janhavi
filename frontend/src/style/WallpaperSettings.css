@@ -1,0 +1,186 @@
+.wallpaper-settings {
+	width: 100%;
+	min-height: 100%;
+	background: #17110e;
+	color: #f4e9dc;
+}
+
+.wallpaper-settings-header {
+	height: 68px;
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	padding: 0 22px;
+	border-bottom: 1px solid #2d211b;
+}
+
+.wallpaper-settings-header h2 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 600;
+}
+
+.wallpaper-settings-back {
+	width: 34px;
+	height: 34px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: #d8c7b8;
+	cursor: pointer;
+	font-size: 20px;
+}
+
+.wallpaper-settings-back:hover {
+	background: #2a1e18;
+	color: #f4e9dc;
+}
+
+.wallpaper-settings-content {
+	padding: 30px 22px;
+}
+
+.wallpaper-settings-description {
+	margin: 0 0 24px;
+	color: #a18e7e;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.wallpaper-options {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.wallpaper-option {
+	padding: 0;
+	border: 1px solid #3d2b22;
+	border-radius: 12px;
+	background: #211813;
+	overflow: hidden;
+	color: #f4e9dc;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 0.2s ease,
+		background 0.2s ease;
+}
+
+.wallpaper-option:hover {
+	background: #2a1e18;
+	border-color: #704b35;
+}
+
+.wallpaper-option.selected {
+	border-color: #a07850;
+}
+
+.wallpaper-preview {
+	width: 100%;
+	height: 130px;
+}
+
+.wallpaper-default {
+	background:
+		radial-gradient(
+			circle at center,
+			rgba(112, 75, 53, 0.18),
+			transparent 60%
+		),
+		#17110e;
+}
+
+.wallpaper-brown {
+	background:
+		radial-gradient(
+			circle at 30% 30%,
+			#80583d,
+			transparent 55%
+		),
+		#2a1e18;
+}
+
+.wallpaper-dark {
+	background:
+		radial-gradient(
+			circle at 70% 40%,
+			#30221c,
+			transparent 50%
+		),
+		#0f0b09;
+}
+
+.wallpaper-cream {
+	background:
+		radial-gradient(
+			circle at 40% 40%,
+			#d6bda5,
+			transparent 55%
+		),
+		#8d725d;
+}
+
+.wallpaper-option-info {
+	min-height: 52px;
+	padding: 0 13px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.wallpaper-option-info > span {
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.wallpaper-radio {
+	width: 21px;
+	height: 21px;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #806e61;
+	border-radius: 50%;
+	color: #f4e9dc;
+}
+
+.wallpaper-option.selected .wallpaper-radio {
+	background: #704b35;
+	border-color: #a07850;
+}
+
+.wallpaper-radio svg {
+	width: 12px;
+	height: 12px;
+}
+
+@media (max-width: 600px) {
+	.wallpaper-settings-header {
+		height: 68px;
+		padding: 0 18px;
+		gap: 14px;
+	}
+
+	.wallpaper-settings-header h2 {
+		font-size: 20px;
+	}
+
+	.wallpaper-settings-content {
+		padding: 26px 18px;
+	}
+
+	.wallpaper-options {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.wallpaper-preview {
+		height: 110px;
+	}
+}
