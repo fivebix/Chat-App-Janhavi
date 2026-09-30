@@ -1060,10 +1060,6 @@ count: unreadCount,
 id: "favorites",
 label: "Favorites",
 },
-{
-id: "groups",
-label: "Groups",
-},
 ...listFilters.map((listName) => ({
 id: listName,
 label: listName,
